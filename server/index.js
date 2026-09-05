@@ -1,6 +1,7 @@
 import http from 'node:http';
 import fs from 'node:fs/promises';
 import path from 'node:path';
+import { fileURLToPath } from 'node:url';
 import { createRepositories } from '../packages/storage/repositories.js';
 import { LocalProvider } from '../packages/providers/local-provider.js';
 import { AgentOrchestrator } from '../packages/runtime/orchestrator.js';
@@ -72,4 +73,5 @@ async function main(req, res) {
 }
 
 export const server = http.createServer((req, res) => { main(req, res); });
-if (import.meta.url === `file://${process.argv[1]}`) server.listen(PORT, HOST, () => console.log(`NexusAI-OS listening on http://${HOST}:${PORT}`));
+const entrypoint = process.argv[1] ? path.resolve(process.argv[1]) : null;
+if (entrypoint && fileURLToPath(import.meta.url) === entrypoint) server.listen(PORT, HOST, () => console.log(`NexusAI-OS listening on http://${HOST}:${PORT}`));
