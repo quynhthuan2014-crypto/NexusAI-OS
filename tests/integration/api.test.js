@@ -21,8 +21,8 @@ test('health, project, task and run APIs work end-to-end', async () => {
   const task = await request('/api/tasks', { method:'POST', body:JSON.stringify({ projectId:project.json.project.id, title:'Demo', prompt:'DEMO: create verified artifact' }) }); assert.equal(task.response.status,201);
   const accepted = await request(`/api/tasks/${task.json.task.id}/run`, { method:'POST', body:'{}' }); assert.equal(accepted.response.status,202);
   let runs = [];
-  for(let i=0;i<40;i++){ runs=(await request('/api/runs')).json.runs; if(runs.length && runs.at(-1).state==='verified') break; await new Promise(r=>setTimeout(r,25)); }
-  assert.equal(runs.length,1); assert.equal(runs[0].state,'verified');
+  for(let i=0;i<40;i++){ runs=(await request('/api/runs')).json.runs; if(runs.length && (runs.at(-1).state==='verified' || runs.at(-1).state==='failed')) break; await new Promise(r=>setTimeout(r,25)); }
+  assert.equal(runs.length,1); assert.equal(runs[0].state,'verified', JSON.stringify(runs[0]));
   const run = await request(`/api/runs/${runs[0].id}`); assert.equal(run.json.run.qualityGate.verified,true);
   const evidence = await request(`/api/runs/${runs[0].id}/evidence`); assert.equal(evidence.json.evidence.length,1);
   const rollback = await request(`/api/runs/${runs[0].id}/rollback`, {method:'POST',body:'{}'}); assert.equal(rollback.response.status,200);
