@@ -1,0 +1,15 @@
+{
+  "name": "nexusai-os",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Local-first verified AI workspace with safe agent orchestration.",
+  "type": "module",
+  "engines": { "node": ">=20" },
+  "scripts": {
+    "start": "node server/index.js",
+    "dev": "node server/index.js",
+    "test": "node --test",
+    "check": "node --check server/index.js && node --check server/http.js && node --check apps/web/app.js",
+    "demo": "node tests/e2e/demo-run.js"
+  }
+}
