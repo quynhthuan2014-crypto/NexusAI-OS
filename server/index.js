@@ -12,11 +12,10 @@ const HOST = process.env.HOST ?? '127.0.0.1';
 const repositories = createRepositories(DATA_DIR);
 const provider = new LocalProvider();
 const subscribers = new Map();
-
 function publish(runId, event) { for (const res of subscribers.get(runId) ?? []) res.write(`event: nexus\ndata: ${JSON.stringify(event)}\n\n`); }
 const orchestrator = new AgentOrchestrator({ ...repositories, provider, emit: publish });
-
 function route(method, pathname) { return `${method} ${pathname}`; }
+
 async function main(req, res) {
   const url = new URL(req.url, `http://${req.headers.host ?? HOST}`);
   try {
@@ -35,22 +34,23 @@ async function main(req, res) {
       if (!await repositories.projects.get(body.projectId)) return sendError(res, 404, 'not-found', 'project not found');
       return sendJson(res, 201, { task: await repositories.tasks.create({ projectId: body.projectId, prompt: body.prompt.trim(), title: body.title?.trim() || body.prompt.trim().slice(0, 80) }) });
     }
+    if (url.pathname === '/api/runs' && req.method === 'GET') return sendJson(res, 200, { runs: await repositories.runs.all() });
     const taskMatch = url.pathname.match(/^\/api\/tasks\/([^/]+)$/);
     if (taskMatch && req.method === 'GET') { const task = await repositories.tasks.get(taskMatch[1]); return task ? sendJson(res, 200, { task }) : sendError(res, 404, 'not-found', 'task not found'); }
     const runMatch = url.pathname.match(/^\/api\/tasks\/([^/]+)\/run$/);
     if (runMatch && req.method === 'POST') {
       const task = await repositories.tasks.get(runMatch[1]); if (!task) return sendError(res, 404, 'not-found', 'task not found');
       const project = await repositories.projects.get(task.projectId); if (!project) return sendError(res, 404, 'not-found', 'project not found');
-      const runPromise = orchestrator.run(task, project); runPromise.catch(() => {});
+      void orchestrator.run(task, project);
       return sendJson(res, 202, { accepted: true, taskId: task.id });
     }
     const runEventsMatch = url.pathname.match(/^\/api\/runs\/([^/]+)\/events$/);
     if (runEventsMatch && req.method === 'GET') {
       const run = await repositories.runs.get(runEventsMatch[1]); if (!run) return sendError(res, 404, 'not-found', 'run not found');
       res.writeHead(200, { 'content-type': 'text/event-stream; charset=utf-8', 'cache-control': 'no-cache', connection: 'keep-alive', 'x-accel-buffering': 'no' });
-      res.write(`event: ready\ndata: ${JSON.stringify({ runId: run.id })}\n\n`);
+      res.write(`event: ready\ndata: ${JSON.stringify({ runId: run.id, replay: run.events ?? [] })}\n\n`);
       const list = subscribers.get(run.id) ?? []; list.push(res); subscribers.set(run.id, list);
-      req.on('close', () => { const current = subscribers.get(run.id) ?? []; subscribers.set(run.id, current.filter((item) => item !== res)); });
+      req.on('close', () => subscribers.set(run.id, (subscribers.get(run.id) ?? []).filter((item) => item !== res)));
       return;
     }
     const runGetMatch = url.pathname.match(/^\/api\/runs\/([^/]+)$/);
