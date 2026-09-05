@@ -1,0 +1,23 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>NexusAI-OS</title><link rel="stylesheet" href="/styles.css">
+</head>
+<body>
+  <aside class="sidebar">
+    <div class="brand"><img src="/logo.svg" alt="NexusAI-OS"><div><strong>NexusAI-OS</strong><span>Verified AI Workspace</span></div></div>
+    <nav><button data-view="dashboard" class="active">Dashboard</button><button data-view="projects">Projects</button><button data-view="tasks">Tasks</button><button data-view="runs">Runs</button><button data-view="settings">Settings</button></nav>
+    <div class="sidebar-foot"><span class="dot"></span><span id="connection">Connecting…</span></div>
+  </aside>
+  <main class="main">
+    <header><div><p class="eyebrow">LOCAL CONTROL CENTER</p><h1 id="page-title">Dashboard</h1><p class="muted">Plan → Build → Review → Fix → Verify</p></div><button id="demo-btn" class="primary">Run Demo</button></header>
+    <section id="dashboard-view" class="view"></section>
+    <section id="projects-view" class="view hidden"></section>
+    <section id="tasks-view" class="view hidden"></section>
+    <section id="runs-view" class="view hidden"></section>
+    <section id="settings-view" class="view hidden"></section>
+  </main>
+  <script type="module" src="/app.js"></script>
+</body>
+</html>
