@@ -1,23 +1,105 @@
 <!doctype html>
 <html lang="en">
 <head>
-  <meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>NexusAI-OS</title><link rel="stylesheet" href="/styles.css">
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#07111f">
+  <meta name="description" content="NexusAI-OS — local-first verified AI workspace and agent control plane.">
+  <title>NexusAI-OS · Control Plane</title>
+  <link rel="icon" type="image/svg+xml" href="/logo.svg">
+  <link rel="stylesheet" href="/styles.css">
 </head>
 <body>
-  <aside class="sidebar">
-    <div class="brand"><img src="/logo.svg" alt="NexusAI-OS"><div><strong>NexusAI-OS</strong><span>Verified AI Workspace</span></div></div>
-    <nav><button data-view="dashboard" class="active">Dashboard</button><button data-view="projects">Projects</button><button data-view="tasks">Tasks</button><button data-view="runs">Runs</button><button data-view="settings">Settings</button></nav>
-    <div class="sidebar-foot"><span class="dot"></span><span id="connection">Connecting…</span></div>
-  </aside>
-  <main class="main">
-    <header><div><p class="eyebrow">LOCAL CONTROL CENTER</p><h1 id="page-title">Dashboard</h1><p class="muted">Plan → Build → Review → Fix → Verify</p></div><button id="demo-btn" class="primary">Run Demo</button></header>
-    <section id="dashboard-view" class="view"></section>
-    <section id="projects-view" class="view hidden"></section>
-    <section id="tasks-view" class="view hidden"></section>
-    <section id="runs-view" class="view hidden"></section>
-    <section id="settings-view" class="view hidden"></section>
-  </main>
+  <div class="ambient ambient-a"></div>
+  <div class="ambient ambient-b"></div>
+
+  <div class="app-shell">
+    <aside class="sidebar">
+      <div class="sidebar-top">
+        <a class="brand" href="#" data-view="workspace" aria-label="NexusAI-OS home">
+          <span class="brand-mark"><img src="/logo.svg" alt=""></span>
+          <span class="brand-copy"><strong>NexusAI-OS</strong><small>Verified AI Control Plane</small></span>
+        </a>
+
+        <div class="runtime-badge">
+          <span class="status-dot" aria-hidden="true"></span>
+          <span><b id="connection">Connecting…</b><small>Local runtime</small></span>
+        </div>
+      </div>
+
+      <nav class="primary-nav" aria-label="Primary">
+        <button data-view="workspace" class="nav-item active" type="button"><span class="nav-icon">⌂</span><span>Workspace</span><kbd>G</kbd></button>
+        <button data-view="projects" class="nav-item" type="button"><span class="nav-icon">◇</span><span>Projects</span><kbd>P</kbd></button>
+        <button data-view="tasks" class="nav-item" type="button"><span class="nav-icon">✓</span><span>Tasks</span><kbd>T</kbd></button>
+        <button data-view="runs" class="nav-item" type="button"><span class="nav-icon">◌</span><span>Runs</span><kbd>R</kbd></button>
+        <button data-view="settings" class="nav-item" type="button"><span class="nav-icon">⚙</span><span>Settings</span><kbd>S</kbd></button>
+      </nav>
+
+      <div class="sidebar-module">
+        <div class="module-title"><span>OPERATIONS</span><span class="module-line"></span></div>
+        <button class="mini-action" type="button" id="command-open"><span>⌘</span><span>Command palette</span><kbd>Ctrl K</kbd></button>
+        <button class="mini-action" type="button" id="help-open"><span>?</span><span>Keyboard shortcuts</span><kbd>H</kbd></button>
+      </div>
+
+      <div class="sidebar-bottom">
+        <div class="trust-card">
+          <div class="trust-orbit"><span></span><span></span><b>✓</b></div>
+          <div><strong>Evidence first</strong><small>Completion requires verification</small></div>
+        </div>
+        <div class="sidebar-meta"><span>v0.1 · local-first</span><span>● secure</span></div>
+      </div>
+    </aside>
+
+    <main class="main-content">
+      <header class="topbar">
+        <div class="breadcrumbs"><span>NEXUS</span><i>/</i><span id="breadcrumb-page">Workspace</span></div>
+        <div class="topbar-actions">
+          <button class="ghost-button" id="refresh-btn" type="button" title="Refresh data">↻ <span>Refresh</span></button>
+          <button class="command-button" id="command-palette-trigger" type="button"><span>Search commands, projects, runs…</span><kbd>Ctrl K</kbd></button>
+          <button class="avatar-button" type="button" title="Local workspace">N</button>
+        </div>
+      </header>
+
+      <section class="page-header">
+        <div>
+          <p class="eyebrow">LOCAL CONTROL CENTER <span class="eyebrow-dot"></span> VERIFIED RUNTIME</p>
+          <h1 id="page-title">Workspace</h1>
+          <p class="page-subtitle">Design, execute, inspect and verify agent work from one controlled workspace.</p>
+        </div>
+        <div class="page-actions">
+          <button id="demo-btn" class="primary-button" type="button"><span>Run Demo</span><b>↗</b></button>
+        </div>
+      </section>
+
+      <section id="workspace-view" class="view"></section>
+      <section id="projects-view" class="view hidden"></section>
+      <section id="tasks-view" class="view hidden"></section>
+      <section id="runs-view" class="view hidden"></section>
+      <section id="settings-view" class="view hidden"></section>
+    </main>
+  </div>
+
+  <div id="command-palette" class="overlay hidden" role="dialog" aria-modal="true" aria-labelledby="command-title">
+    <div class="overlay-backdrop" data-close-overlay></div>
+    <div class="command-panel">
+      <div class="command-search"><span>⌕</span><input id="command-input" autocomplete="off" placeholder="Type a command…"><kbd>Esc</kbd></div>
+      <div class="command-heading"><span id="command-title">Quick actions</span><small>Navigate without leaving your keyboard</small></div>
+      <div id="command-list" class="command-list"></div>
+    </div>
+  </div>
+
+  <div id="shortcut-panel" class="overlay hidden" role="dialog" aria-modal="true" aria-labelledby="shortcut-title">
+    <div class="overlay-backdrop" data-close-overlay></div>
+    <div class="shortcut-card">
+      <div class="dialog-head"><div><p class="eyebrow">OPERATIONS</p><h2 id="shortcut-title">Keyboard shortcuts</h2></div><button class="icon-button" type="button" data-close-overlay>×</button></div>
+      <div class="shortcut-grid">
+        <div><kbd>G</kbd><span>Workspace</span></div><div><kbd>P</kbd><span>Projects</span></div><div><kbd>T</kbd><span>Tasks</span></div>
+        <div><kbd>R</kbd><span>Runs</span></div><div><kbd>S</kbd><span>Settings</span></div><div><kbd>Ctrl K</kbd><span>Command palette</span></div>
+      </div>
+    </div>
+  </div>
+
+  <div id="toast-region" class="toast-region" aria-live="polite" aria-atomic="true"></div>
   <script type="module" src="/app.js"></script>
 </body>
 </html>
