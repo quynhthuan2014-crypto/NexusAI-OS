@@ -21,9 +21,9 @@ test('NexusAI-OS web shell exposes the premium workspace contract', () => {
 test('NexusAI-OS web stylesheet defines the responsive product shell', () => {
   const css = read('styles.css');
   assert.match(css, /\.app-shell\{/);
-  assert.match(css, /\.sidebar\/\/__NEXUS_SHELL__/);
-  assert.match(css, /@media \(max-width: 980px\)/);
-  assert.match(css, /@media \(max-width: 700px\)/);
+  assert.match(css, /\.sidebar\{/);
+  assert.match(css, /@media \(max-width:980px\)/);
+  assert.match(css, /@media \(max-width:700px\)/);
 });
 
 test('NexusAI-OS app keeps navigation and command palette state local', () => {
