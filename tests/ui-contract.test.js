@@ -29,7 +29,7 @@ test('NexusAI-OS web stylesheet defines the responsive product shell', () => {
 test('NexusAI-OS app keeps navigation and command palette state local', () => {
   const js = read('app.js');
   assert.match(js, /command-palette/);
-  assert.match(js, /keyboard-shortcuts/);
+  assert.match(js, /shortcut-panel/);
   assert.match(js, /showToast/);
   assert.match(js, /setView\(/);
 });
