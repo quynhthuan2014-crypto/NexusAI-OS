@@ -3,6 +3,7 @@ import { evaluateQualityGate } from '../core/quality-gate.js';
 import { makeEvidence, appendEvidence } from '../core/evidence.js';
 import { createCheckpoint } from './checkpoint.js';
 import { writeFile, readFile } from '../tools/sandbox.js';
+import { runAllowed } from '../tools/process.js';
 
 export class AgentOrchestrator {
   constructor({ provider, runs, projects, emit }) { this.provider = provider; this.runs = runs; this.projects = projects; this.emit = emit ?? (() => {}); }
@@ -57,10 +58,22 @@ export class AgentOrchestrator {
 
       await event('stage.start', 'verifier', 'Verifier running deterministic checks');
       for (const check of decision.checks ?? []) {
-        const t0 = new Date().toISOString(); let passed = false; let summary = '';
-        try { const content = await readFile(project.root, check.path); passed = content.includes(check.contains); summary = passed ? 'Expected marker found' : 'Expected marker missing'; }
-        catch (error) { summary = error.message; }
-        const evidence = makeEvidence({ name: check.name, tool: 'readFile', startedAt: t0, endedAt: new Date().toISOString(), exitCode: passed ? 0 : 1, passed, required: check.required !== false, summary });
+        const t0 = new Date().toISOString(); let passed = false; let summary = ''; let toolName = 'readFile'; let exitCode = 1;
+        try {
+          if (check.type === 'command' || check.command) {
+            toolName = `process:${check.command || check.name}`;
+            const res = await runAllowed(project.root, check.command || check.name, check.args ?? []);
+            passed = res.exitCode === 0;
+            exitCode = res.exitCode;
+            summary = passed ? `Command '${check.command || check.name}' passed cleanly` : `Command failed with exit code ${res.exitCode}`;
+          } else {
+            const content = await readFile(project.root, check.path);
+            passed = content.includes(check.contains);
+            exitCode = passed ? 0 : 1;
+            summary = passed ? 'Expected marker found' : 'Expected marker missing';
+          }
+        } catch (error) { summary = error.message; exitCode = 1; }
+        const evidence = makeEvidence({ name: check.name, tool: toolName, startedAt: t0, endedAt: new Date().toISOString(), exitCode, passed, required: check.required !== false, summary });
         run = appendEvidence(run, evidence);
         await event('evidence', 'verifier', `${check.name}: ${passed ? 'PASS' : 'FAIL'}`, { evidence });
       }
